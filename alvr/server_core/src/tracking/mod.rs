@@ -266,6 +266,17 @@ impl TrackingManager {
             })
     }
 
+    pub fn get_predicted_device_motion(
+        &self,
+        device_id: u64,
+        sample_timestamp: Duration,
+        target_timestamp: Duration,
+    ) -> Option<DeviceMotion> {
+        let motion = self.get_device_motion(device_id, sample_timestamp)?;
+
+        Some(motion.predict(sample_timestamp, target_timestamp))
+    }
+
     pub fn report_hand_skeleton(
         &mut self,
         hand_type: HandType,
