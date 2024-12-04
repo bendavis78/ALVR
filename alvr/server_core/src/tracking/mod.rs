@@ -55,8 +55,8 @@ struct MotionConfig {
 }
 
 pub struct TrackingManager {
-    last_head_pose: Pose,             // client's reference space
-    inverse_recentering_origin: Pose, // client's reference space
+    last_head_pose: Pose,                 // client's reference space
+    client_to_server_recenter_pose: Pose, // client's reference space
     device_motions_history: HashMap<u64, VecDeque<(Duration, DeviceMotion)>>,
     hand_skeletons_history: [VecDeque<(Duration, [Pose; 26])>; 2],
     last_face_data: FaceData,
@@ -66,7 +66,7 @@ impl TrackingManager {
     pub fn new() -> TrackingManager {
         TrackingManager {
             last_head_pose: Pose::default(),
-            inverse_recentering_origin: Pose::default(),
+            client_to_server_recenter_pose: Pose::default(),
             device_motions_history: HashMap::new(),
             hand_skeletons_history: [VecDeque::new(), VecDeque::new()],
             last_face_data: FaceData::default(),
@@ -106,7 +106,7 @@ impl TrackingManager {
             RotationRecenteringMode::Tilted => self.last_head_pose.orientation,
         };
 
-        self.inverse_recentering_origin = Pose {
+        self.client_to_server_recenter_pose = Pose {
             position,
             orientation,
         }
@@ -114,11 +114,15 @@ impl TrackingManager {
     }
 
     pub fn recenter_pose(&self, pose: Pose) -> Pose {
-        self.inverse_recentering_origin * pose
+        self.client_to_server_recenter_pose * pose
+    }
+
+    pub fn server_to_client_pose(&self, pose: Pose) -> Pose {
+        self.client_to_server_recenter_pose.inverse() * pose
     }
 
     pub fn recenter_motion(&self, motion: DeviceMotion) -> DeviceMotion {
-        self.inverse_recentering_origin * motion
+        self.client_to_server_recenter_pose * motion
     }
 
     // Performs all kinds of tracking transformations, driven by settings.
