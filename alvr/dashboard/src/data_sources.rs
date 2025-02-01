@@ -304,7 +304,7 @@ impl DataSources {
                         let matches = version == *alvr_common::ALVR_VERSION;
 
                         if !matches {
-                            error!("Server version mismatch: found {version}. Please remove all previous ALVR installations");
+                            error!("Server version mismatch: found {version}. Please remove all previous ALVR installations and restart SteamVR");
                         }
 
                         matches
